@@ -22,9 +22,12 @@
 @property (weak, nonatomic) IBOutlet UILabel *emailLabel;
 @property (weak, nonatomic) IBOutlet UILabel *numberOfCardLabel;
 @property (weak, nonatomic) IBOutlet UILabel *daysLabel;
-@property (weak, nonatomic) IBOutlet UILabel *abonementLabel;
+
 @property (strong, nonatomic)NSDate* dateOfEnd;
+@property (weak, nonatomic) IBOutlet UIImageView *beltImage;
 @property (strong,nonatomic)ViewController* vc;
+- (IBAction)editAction:(id)sender;
+- (IBAction)starInstagram:(id)sender;
 @end
 
 typedef void(^ getUserCompletion)(BOOL) ;
@@ -41,7 +44,7 @@ typedef void(^ getUserCompletion)(BOOL) ;
     NSDateFormatter* correctDateFormatter = [[NSDateFormatter alloc] init];
     NSCalendar *cal = [NSCalendar currentCalendar];
     [dateFormatterFromServer setDateFormat:@"yyyy-MM-dd"];
-    [correctDateFormatter setDateStyle:NSDateFormatterLongStyle];
+    [correctDateFormatter setDateStyle:NSDateFormatterShortStyle];
     [correctDateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"ru_RU"]];
     UIStoryboard* storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     self.vc = [storyboard instantiateViewControllerWithIdentifier:@"ViewController"];
@@ -65,12 +68,14 @@ typedef void(^ getUserCompletion)(BOOL) ;
                                               value:1
                                              toDate:self.dateOfEnd
                                             options:0];
+             NSData* imageData = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:self.client.imageString] ];
+             
+             [self.beltImage setImage:[UIImage imageWithData:imageData]];
              if([self.client.abonement_id isEqual:[NSNumber numberWithInt:3]]){
-                 self.abonementLabel.text = @"Безлимит до ";
-                // self.daysLabel.text = [NSString stringWithFormat:@"%@", self.client.birth_date];
+                
                  [self.daysLabel setText:[correctDateFormatter stringFromDate:self.dateOfEnd]];
              }else{
-                 self.abonementLabel.text = @"Количество тренировок - ";
+                 
                  self.daysLabel.text = [NSString stringWithFormat:@"%@", self.client.days];
              }
              
@@ -133,6 +138,8 @@ typedef void(^ getUserCompletion)(BOOL) ;
                                              self.client.gender = [json objectForKey:@"gender"];
                                              self.client.birth_date = [json objectForKey:@"birth_date"];
                                              self.client.days = [json objectForKey:@"days"];
+                                             self.client.imageString = [NSString stringWithFormat:@"%@%@",@"http://app.checkmat.kz/",[json objectForKey:@"rank_image"]];
+                                             
                                              complblock(YES);
                                          } onFailure:^(NSError *error) {
                                              NSLog(@"Error %@", error);
@@ -145,5 +152,17 @@ typedef void(^ getUserCompletion)(BOOL) ;
     
     [self presentViewController:[self vc] animated:YES completion:nil];
     
+}
+- (IBAction)editAction:(id)sender {
+    
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://app.checkmat.kz"]
+                                       options:@{}
+                             completionHandler:nil];
+}
+
+- (IBAction)starInstagram:(id)sender {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.instagram.com/temirlanmerekeyev/"]
+                                       options:@{}
+                             completionHandler:nil];
 }
 @end

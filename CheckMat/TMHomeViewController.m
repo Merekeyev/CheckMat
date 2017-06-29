@@ -8,6 +8,7 @@
 
 #import "TMHomeViewController.h"
 #import "TMServerManager.h"
+#import "TMNewsCell.h"
 @interface TMHomeViewController () <UITableViewDelegate, UITableViewDataSource>
 @property(strong,nonatomic)NSMutableArray* newsArray;
 @property(strong,nonatomic)NSMutableArray* titleArray;
@@ -15,6 +16,11 @@
 @property(strong,nonatomic)NSMutableArray* attrArray;
 @property(strong,nonatomic)NSArray* json;
 @property(strong,nonatomic)NSAttributedString* attr;
+@property(strong,nonatomic)NSDate* dateOfPublication;
+
+
+
+@property(strong,nonatomic)NSDateFormatter* dateFormatter;
 @end
 typedef void(^ getDataCompletion)(BOOL) ;
 @implementation TMHomeViewController
@@ -28,11 +34,11 @@ typedef void(^ getDataCompletion)(BOOL) ;
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
-    [self.tableView registerClass:[UITableViewCell self] forCellReuseIdentifier:@"Cell"];
-    self.newsArray  = [NSMutableArray array];
-    self.titleArray = [NSMutableArray array];
-    self.dateArray  = [NSMutableArray array];
+
     [self loadNews];
+    
+    
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -41,7 +47,7 @@ typedef void(^ getDataCompletion)(BOOL) ;
 }
 
 #pragma mark - API
-
+/*
 -(void)getData:(getDataCompletion)complblock{
     
     [[TMServerManager sharedManager] getHomeDataOnSuccess:^(NSArray *news, NSArray *titleArray, NSArray *date) {
@@ -52,7 +58,7 @@ typedef void(^ getDataCompletion)(BOOL) ;
         NSLog(@"Error %@", error);
     }];
     
-}
+}*/
 
 -(void) loadNews{
     
@@ -85,7 +91,10 @@ typedef void(^ getDataCompletion)(BOOL) ;
                      options:@{ NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType } documentAttributes:nil error:nil];
         [self.attrArray addObject:self.attr];
         
+        
     }
+    
+    
     
     [self.tableView reloadData];
 }
@@ -106,18 +115,49 @@ typedef void(^ getDataCompletion)(BOOL) ;
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-    cell.textLabel.text = [[self.attrArray objectAtIndex:indexPath.row] string];
-    cell.accessoryType = UITableViewCellAccessoryNone;
-   
-    //cell.detailTextLabel.text = [[self.attrArray objectAtIndex:indexPath.row] string];
+   static NSString* cellIdentifier = @"Cell";
+    
+    TMNewsCell* cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    
+    if(!cell){
+        cell = [[TMNewsCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
+    }
+    
+    NSNumber* intervalNumber = [self.dateArray objectAtIndex:indexPath.row];
+    NSTimeInterval interval = [intervalNumber doubleValue];
+    self.dateOfPublication = [NSDate dateWithTimeIntervalSince1970:interval];
+    self.dateFormatter = [[NSDateFormatter alloc] init];
+    [self.dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"ru-RU"] ];
+    [self.dateFormatter setDateStyle:NSDateFormatterLongStyle];
     
     
+    cell.newsLabel.numberOfLines  = 0;
+    cell.titleLabel.numberOfLines = 0;
+    cell.dateLabel.numberOfLines  = 0;
+    
+    cell.titleLabel.text = [self.titleArray objectAtIndex:indexPath.row];
+    cell.dateLabel.text = [self.dateFormatter stringFromDate:self.dateOfPublication];
+    cell.newsLabel.text = [NSString stringWithFormat:@"%@", [[self.attrArray objectAtIndex:indexPath.row] string]];
+    [cell.newsLabel sizeToFit];
+    [cell.titleLabel sizeToFit];
+    [cell.dateLabel sizeToFit];
     return cell;
 }
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return UITableViewAutomaticDimension;
+    
+    CGSize constraintSize = CGSizeMake(250.0f, CGFLOAT_MAX);
+    CGSize size;
+    UIFont* font = [UIFont systemFontOfSize:15.0f];
+    
+   
+        CGRect frame = [[[self.attrArray objectAtIndex:indexPath.row] string] boundingRectWithSize:constraintSize
+                                               options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                                            attributes:@{NSFontAttributeName:font} context:nil];
+        size = frame.size;
+    
+    
+    return size.height ;
 }
 
 
