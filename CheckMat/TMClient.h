@@ -16,4 +16,5 @@
 @property (strong, nonatomic)NSString* gender;
 @property (strong, nonatomic)NSString* birth_date;
 @property (strong, nonatomic)NSNumber* days;
+@property (strong, nonatomic)NSString* imageString;
 @end

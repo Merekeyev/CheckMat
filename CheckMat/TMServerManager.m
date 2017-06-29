@@ -130,6 +130,7 @@
                          client.gender = [responseObject objectForKey:@"gender"];
                          client.birth_date = [responseObject objectForKey:@"birth_date"];
                          client.days = [responseObject objectForKey:@"days"];
+                         client.imageString = [responseObject objectForKey:@"rank_image"];
                          
                          if(success){
                              success(responseObject);
